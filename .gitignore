@@ -1,3 +1,12 @@
+# Environment Variables (CRITICAL)
+.env
+.env.local
+
+# Node.js / Frontend
+node_modules/
+dist/
+.next/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
