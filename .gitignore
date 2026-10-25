@@ -23,7 +23,8 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
+/lib/
+!frontend/src/lib/
 lib64/
 parts/
 sdist/
@@ -227,3 +228,10 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Python virtual environments
+.venv/
+.venv312/
+venv/
+__pycache__/
+*.py[cod]

@@ -2,7 +2,9 @@ import type { VerifyLinkResponse, VerdictStatus } from "@/types/verification";
 
 const VERDICT_STATUSES: readonly VerdictStatus[] = ["safe", "warning", "critical"];
 
-const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL ?? "").trim().replace(/\/+$/, "");
+const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api")
+  .trim()
+  .replace(/\/+$/, "");
 
 const VERIFY_ENDPOINT_PATH = (process.env.NEXT_PUBLIC_API_PATH ?? "/verify-link").trim();
 
@@ -115,9 +117,12 @@ export function parseVerificationResponse(data: unknown): VerifyLinkResponse {
   }
   const aiAnalysis = typeof obj.ai_analysis === "string" ? obj.ai_analysis : "";
 
+  const trustScore = typeof obj.trust_score === "number" ? obj.trust_score : undefined;
+
   return {
     target_url: obj.target_url,
     analyzed_domain: obj.analyzed_domain,
+    trust_score: trustScore,
     status: obj.status as VerdictStatus,
     threat_flags: obj.threat_flags as string[],
     ai_analysis: aiAnalysis,

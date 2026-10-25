@@ -110,14 +110,47 @@ export default function VerdictCard({ response, submittedUrl }: VerdictCardProps
         </div>
       </dl>
 
+      {/* Trust Score Display */}
+      <div className={`mt-4 rounded-xl border p-4 ${config.border} bg-background/40`}>
+        <div className="flex items-center justify-between">
+          <div>
+            <span className="text-xs font-medium uppercase tracking-wider text-muted">Trust Score</span>
+            <div className="mt-1 flex items-baseline gap-2">
+              <span className={`text-3xl font-extrabold ${config.accent}`}>
+                {response.trust_score !== undefined ? response.trust_score : "—"}
+              </span>
+              <span className="text-sm text-muted">/ 100</span>
+            </div>
+          </div>
+          <span className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold ${config.border} ${config.bg} ${config.accent}`}>
+            {config.label}
+          </span>
+        </div>
+        {response.trust_score !== undefined ? (
+          <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-border/60">
+            <div
+              className={`h-full rounded-full transition-all duration-500 ${
+                response.status === "safe"
+                  ? "bg-safe"
+                  : response.status === "warning"
+                  ? "bg-warning"
+                  : "bg-critical"
+              }`}
+              style={{ width: `${Math.min(100, Math.max(0, response.trust_score))}%` }}
+            />
+          </div>
+        ) : null}
+      </div>
+
       {submittedUrl && submittedUrl !== response.target_url ? (
         <p className="mt-3 text-xs text-muted">
           Submitted URL differed from the analyzed URL returned by the service.
         </p>
       ) : null}
 
-      <div className="mt-5">
-        <h3 className="text-sm font-semibold text-foreground">AI analysis</h3>
+      {/* AI Analysis below the score */}
+      <div className="mt-5 rounded-xl border border-border/60 bg-background/40 p-4">
+        <h3 className="text-sm font-semibold text-foreground">AI Analysis</h3>
         <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-relaxed text-foreground/90">
           {response.ai_analysis && response.ai_analysis.trim().length > 0
             ? response.ai_analysis

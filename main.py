@@ -15,12 +15,18 @@ NEBIUS_API_KEY = os.getenv("NEBIUS_API_KEY")
 # NEW: Secure CORS by pulling the frontend URL from .env (defaults to localhost:3000)
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
 
+allowed_origins = list({
+    FRONTEND_URL,
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+})
+
 app = FastAPI(title="VeriShield AI API")
 
 # CRITICAL: Secure CORS configuration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[FRONTEND_URL], # Locked down strictly to your Next.js app
+    allow_origins=allowed_origins, # Locked down strictly to your Next.js app
     allow_credentials=True,
     allow_methods=["GET", "POST", "OPTIONS"], # Explicitly define allowed methods
     allow_headers=["*"],
