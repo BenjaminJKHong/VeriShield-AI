@@ -2,17 +2,20 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import os
-import asyncio  # NEW: Required for handling AI timeouts
+import asyncio  
 from dotenv import load_dotenv
+from scraper import scrape_website_text
 
-# Import the security logic you and Mehrunisha are building
-from heuristics import analyze_domain_age 
+# Import the security logic
+from heuristics import analyze_domain_age, analyze_ssl
+# Import Nebius API connection
+from ai_pipeline import get_nebius_risk_score
 
 # Load environment variables
 load_dotenv()
 NEBIUS_API_KEY = os.getenv("NEBIUS_API_KEY")
 
-# NEW: Secure CORS by pulling the frontend URL from .env (defaults to localhost:3000)
+# Secure CORS by pulling the frontend URL from .env (defaults to localhost:3000)
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
 
 allowed_origins = list({
@@ -26,9 +29,9 @@ app = FastAPI(title="VeriShield AI API")
 # CRITICAL: Secure CORS configuration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=allowed_origins, # Locked down strictly to your Next.js app
+    allow_origins=allowed_origins,
     allow_credentials=True,
-    allow_methods=["GET", "POST", "OPTIONS"], # Explicitly define allowed methods
+    allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
 )
 
@@ -43,36 +46,48 @@ class ContentRequest(BaseModel):
 async def root():
     return {"message": "VeriShield AI Backend is Running!"}
 
-# Endpoint 1: Link Verification (UPDATED WITH ASYNC & SCORING)
+# Endpoint 1: Link Verification
 @app.post("/api/verify-link")
 async def verify_link(request: LinkRequest):
-    # 1. Run your deterministic security checks dynamically
+    # 1. Run deterministic security checks dynamically
     domain_data = analyze_domain_age(request.url)
+    ssl_data = analyze_ssl(request.url)
     
     threat_flags = []
     if domain_data.get("flagged"):
         threat_flags.append(domain_data["reason"])
+    if ssl_data.get("flagged"):
+        threat_flags.append(ssl_data["reason"])
         
-    # 2. Async Try/Except block to safely handle Umair's upcoming AI call
-    ai_analysis_text = "AI analysis pending."
-    ai_score = 0
+    # 2. Nebius AI Integration (Web Scraping + AI Assessment)
+    website_text = scrape_website_text(request.url)
     
     try:
-        # Simulating AI processing time (Replace this later with Umair's actual function)
-        await asyncio.sleep(2) 
-        ai_analysis_text = "Waiting for Umair's actual AI integration..."
-        ai_score = 30 # Mock risk score
+        ai_data = await asyncio.wait_for(get_nebius_risk_score(website_text), timeout=15.0)
+        ai_score = ai_data.get("ai_risk_score", 0)
+        ai_analysis_text = ai_data.get("analysis_summary", "Analysis complete.")
         
+        if ai_data.get("manipulation_tactics"):
+            threat_flags.extend(ai_data.get("manipulation_tactics"))
+            
     except asyncio.TimeoutError:
-        ai_analysis_text = "WARNING: AI verification timed out. Relying on heuristic data only."
+        ai_score = 0
+        ai_analysis_text = "WARNING: Nebius AI verification timed out. Relying on heuristic data."
     except Exception as e:
-        ai_analysis_text = f"ERROR: AI verification failed ({str(e)}). Relying on heuristic data."
+        ai_score = 0
+        ai_analysis_text = f"ERROR: AI verification failed ({str(e)})."
 
     # 3. Calculate Trust Score Engine Logic
-    # Base score is 100. We subtract points for AI risk and heuristic flags.
     final_score = 100 - (ai_score * 0.6)
+    
     if domain_data.get("flagged"):
         final_score -= 40
+        
+    if ssl_data.get("flagged"):
+        if ssl_data.get("severity") == "Critical":
+            final_score -= 40
+        else:
+            final_score -= 20 
         
     # Ensure score stays strictly between 0 and 100
     final_score = max(0, min(100, int(final_score)))
@@ -90,7 +105,6 @@ async def verify_link(request: LinkRequest):
 # Endpoint 2: Deepfake / Content Verification
 @app.post("/api/verify-content")
 async def verify_content(request: ContentRequest):
-    # MOCK RESPONSE
     return {
         "trust_score": 85,
         "status": "safe",

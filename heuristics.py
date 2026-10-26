@@ -1,6 +1,11 @@
 import whois
 import tldextract
 from datetime import datetime
+# NEW: Required for Mehrunisha's SSL function
+import ssl
+import socket
+import time
+from urllib.parse import urlparse
 
 def analyze_domain_age(url: str):
     """
@@ -77,4 +82,3 @@ def analyze_ssl(domain: str, timeout: float = 5.0) -> dict:
         return result(False, None, True, "Critical", "No SSL certificate / HTTPS unavailable")
     except Exception as e:
         return result(False, None, False, "Warning", f"SSL check failed: {type(e).__name__}")
-
