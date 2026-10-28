@@ -51,4 +51,5 @@ phoenix-channels-python-client==0.2.4
 pillow==12.3.0
 propcache==0.5.2
 protobuf==7.35.1
-pyarrow==24
+pyarrow==24.0.0
+python-whois==0.9.6
