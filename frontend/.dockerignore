@@ -1,0 +1,53 @@
+# Dependencies
+node_modules
+.pnpm
+.pnpm-debug.log*
+
+# Next.js build output
+.next
+out
+
+# Git
+.git
+.gitignore
+
+# Environment files (do not include .env with production secrets)
+.env
+.env.local
+.env.*
+.env.production
+
+# Logs and debugging
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Testing and coverage
+coverage
+*.lcov
+
+# TypeScript build info
+*.tsbuildinfo
+
+# Local editor / OS artifacts
+.vscode
+.idea
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Temporary / development artifacts
+dist
+build
+temp
+*.tgz
+
+# Docker-specific
+Dockerfile
+.dockerignore
+
+# Scripts / temporary test files from local development
+test_*.mjs
+qa_*.mjs
