@@ -11,6 +11,7 @@ WORKDIR /app
 # Install system dependencies (required for some web scraping/network packages)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
+    whois \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy the requirements file first to leverage Docker cache layers
