@@ -3,12 +3,9 @@ import os
 import json
 from dotenv import load_dotenv
 
-load_dotenv()
-
-# Use AsyncOpenAI so async/await works properly with FastAPI
 client = AsyncOpenAI(
-    base_url="https://api.studio.nebius.ai/v1/",
-    api_key=os.getenv("NEBIUS_API_KEY"),
+    api_key=os.environ.get("NEBIUS_API_KEY"), # This matches your Render variable perfectly
+    base_url="https://api.studio.nebius.ai/v1/" # Make sure the Nebius base URL is set!
 )
 
 async def get_nebius_risk_score(scraped_text: str):
