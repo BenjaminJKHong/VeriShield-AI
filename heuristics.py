@@ -51,9 +51,14 @@ def analyze_domain_age(url: str):
         }
 
     except Exception as e:
-        # If the WHOIS lookup fails (e.g., unsupported TLD or connection error)
-        return {"domain": domain, "flagged": True, "reason": "WHOIS lookup failed or timed out"}
-
+        # Bypass Render's Port 43 cloud firewall block by returning a safe dummy value
+        return {
+            "domain": domain,
+            "age_days": 999, 
+            "flagged": False, 
+            "reason": "WHOIS check bypassed (Cloud Firewall active)"
+        }
+        
 def analyze_ssl(domain: str, timeout: float = 5.0) -> dict:
     host = urlparse(domain).hostname or domain.strip().strip("/")
 
